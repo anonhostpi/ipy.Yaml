@@ -24,6 +24,13 @@ Copy-Item "$PSScriptRoot/vendor/ruamel/__init__.py" (Join-Path $WorkDir 'ruamel/
 Copy-Item "$PSScriptRoot/vendor/ruamel/yaml/__init__.py" "$destYaml/__init__.py" -Force
 Copy-Item "$PSScriptRoot/vendor/ruamel/yaml/compat.py" "$destYaml/compat.py" -Force
 #endregion
-#region PHASE 3: Zip into dist/ruamel.yaml.zip
-# WIP
+#region PHASE 3: Zip
+New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
+$zipPath = Join-Path $OutDir 'ruamel.yaml.zip'
+if (Test-Path $zipPath) { Remove-Item $zipPath }
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+[System.IO.Compression.ZipFile]::CreateFromDirectory(
+    (Join-Path $WorkDir 'ruamel'), $zipPath)
+Remove-Item -Recurse -Force $WorkDir
+Write-Host "Built: $zipPath"
 #endregion
