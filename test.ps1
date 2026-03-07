@@ -18,5 +18,10 @@ assert '# inline comment' in out, 'Comment lost: ' + out
 print('round-trip OK')
 '@
 $engine.Execute($yaml_rt)
-# Test 3: C-extension absence handled gracefully
-# WIP
+# Test 3: C-extension absence
+$engine.Execute(@'
+import ruamel.yaml
+assert ruamel.yaml.__with_libyaml__ == False, 'Expected no libyaml'
+print('no-cyaml OK')
+'@)
+Write-Host 'All tests passed.'
