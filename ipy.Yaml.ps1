@@ -349,7 +349,7 @@ class MutableSliceableSequence(MutableSequence):  # type: ignore
         # type: (Any) -> None
         raise IndexError
 '@
-function Add-IpyYaml {
+function Install-IpyYaml {
     param([Parameter(Mandatory)] $Engine)
     $Engine.Add('/ipy/lib/site-packages', $wheel_url)
     $Engine.Add('/ipy/lib/site-packages/ruamel/__init__.py', $namespace_shim)
