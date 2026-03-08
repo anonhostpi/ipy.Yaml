@@ -1,5 +1,7 @@
+New-Module -Name 'ipy.Yaml' -ScriptBlock {
 # ipy.Yaml.ps1 -- loads ruamel.yaml 0.16.13 from PyPI into an IronPythonEmbedded engine
 $wheel_url = 'https://files.pythonhosted.org/packages/ed/c3/4c823dac2949a6baf36a4987d04c50d30184147393ba6f4bfb4c67d15a13/ruamel.yaml-0.16.13-py2.py3-none-any.whl'
+Add-Type -AssemblyName System.IO.Compression
 $namespace_shim = @'
 # Namespace package shim for IronPython in-memory imports.
 # The IronPythonEmbedded meta_path importer resolves ruamel.yaml directly;
@@ -355,10 +357,74 @@ class MutableSliceableSequence(MutableSequence):  # type: ignore
         raise IndexError
 '@
 function Install-IpyYaml {
-    param([Parameter(Mandatory)] $Engine)
-    $Engine.Add('/ipy/lib/site-packages', $wheel_url)
-    $Engine.Add('/ipy/lib/site-packages/ruamel/__init__.py', $namespace_shim)
-    $Engine.Add('/ipy/lib/site-packages/ruamel/yaml/__init__.py', $patched_init)
-    $Engine.Add('/ipy/lib/site-packages/ruamel/yaml/compat.py', $patched_compat)
-    return $Engine
+    [CmdletBinding()]
+    param(
+        [Parameter()]
+        [object]$Engine,
+
+        [Parameter()]
+        [string]$Path
+    )
+
+    if (-not $Engine -and -not $Path) {
+        throw "Install-IpyYaml requires at least one of -Engine or -Path."
+    }
+
+    # In-memory install (IronPythonEmbedded)
+    if ($Engine) {
+        $Engine.Add('/ipy/lib/site-packages', $wheel_url)
+        $Engine.Add('/ipy/lib/site-packages/ruamel/__init__.py', $namespace_shim)
+        $Engine.Add('/ipy/lib/site-packages/ruamel/yaml/__init__.py', $patched_init)
+        $Engine.Add('/ipy/lib/site-packages/ruamel/yaml/compat.py', $patched_compat)
+    }
+
+    # Disk install (standard IronPython)
+    if ($Path) {
+        $sitePackages = Join-Path $Path "lib/site-packages"
+        if (-not (Test-Path $sitePackages)) {
+            New-Item -ItemType Directory -Path $sitePackages -Force | Out-Null
+        }
+
+        # Download and extract wheel in memory
+        $response = Invoke-WebRequest -Uri $wheel_url -UseBasicParsing
+        $stream = [System.IO.MemoryStream]::new($response.Content)
+        $zip = [System.IO.Compression.ZipArchive]::new($stream, [System.IO.Compression.ZipArchiveMode]::Read)
+        foreach ($entry in $zip.Entries) {
+            if ($entry.FullName.EndsWith('/')) { continue }
+            $targetPath = Join-Path $sitePackages $entry.FullName
+            $targetDir = Split-Path -Parent $targetPath
+            if (-not (Test-Path $targetDir)) {
+                New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
+            }
+            $entryStream = $entry.Open()
+            $fileStream = [System.IO.File]::Create($targetPath)
+            $entryStream.CopyTo($fileStream)
+            $fileStream.Close()
+            $entryStream.Close()
+        }
+        $zip.Dispose()
+        $stream.Dispose()
+
+        # Write namespace shim (ruamel is a namespace package, ipy needs explicit __init__.py)
+        $ruamelDir = Join-Path $sitePackages "ruamel"
+        if (-not (Test-Path $ruamelDir)) {
+            New-Item -ItemType Directory -Path $ruamelDir -Force | Out-Null
+        }
+        [System.IO.File]::WriteAllText((Join-Path $ruamelDir "__init__.py"), $namespace_shim, [System.Text.Encoding]::UTF8)
+
+        # Overwrite with patched files
+        $patches = @{
+            'ruamel/yaml/__init__.py' = $patched_init
+            'ruamel/yaml/compat.py'   = $patched_compat
+        }
+        foreach ($relPath in $patches.Keys) {
+            $targetPath = Join-Path $sitePackages $relPath
+            [System.IO.File]::WriteAllText($targetPath, $patches[$relPath], [System.Text.Encoding]::UTF8)
+        }
+    }
+
+    if ($Engine) { return $Engine }
 }
+
+Export-ModuleMember -Function Install-IpyYaml
+} | Import-Module
