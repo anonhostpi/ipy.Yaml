@@ -2,7 +2,7 @@
 $builder = iwr 'https://raw.githubusercontent.com/anonhostpi/IronPythonEmbedded/main/IronPythonEmbedded.ps1' | iex
 $engine = $builder.Build()
 . "$PSScriptRoot/ipy.Yaml.ps1"
-Add-IpyYaml -Engine $engine
+Install-IpyYaml -Engine $engine
 # Test 1: Basic import
 $engine.Execute("import ruamel.yaml; print('import OK:', ruamel.yaml.__version__)")
 # Test 2: Round-trip comment preservation
