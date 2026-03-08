@@ -20,7 +20,7 @@ __with_libyaml__ = False
 
 from ruamel.yaml.main import *  # NOQA
 '@
-$patchedCompat = @'
+$patched_compat = @'
 # coding: utf-8
 
 from __future__ import print_function
