@@ -351,9 +351,9 @@ class MutableSliceableSequence(MutableSequence):  # type: ignore
 '@
 function Add-IpyYaml {
     param([Parameter(Mandatory)] $Engine)
-    $Engine.Add('/ipy/lib/site-packages', $WheelUrl)
-    $Engine.Add('/ipy/lib/site-packages/ruamel/__init__.py', $namespaceShim)
-    $Engine.Add('/ipy/lib/site-packages/ruamel/yaml/__init__.py', $patchedInit)
-    $Engine.Add('/ipy/lib/site-packages/ruamel/yaml/compat.py', $patchedCompat)
+    $Engine.Add('/ipy/lib/site-packages', $wheel_url)
+    $Engine.Add('/ipy/lib/site-packages/ruamel/__init__.py', $namespace_shim)
+    $Engine.Add('/ipy/lib/site-packages/ruamel/yaml/__init__.py', $patched_init)
+    $Engine.Add('/ipy/lib/site-packages/ruamel/yaml/compat.py', $patched_compat)
     return $Engine
 }
