@@ -18,10 +18,10 @@ $engine.Execute("import ruamel.yaml; print(ruamel.yaml.__version__)")
 
 ## API
 
-### `Add-IpyYaml`
+### `Install-IpyYaml`
 
 ```powershell
-Add-IpyYaml -Engine <IronPythonEngine>
+Install-IpyYaml -Engine <IronPythonEngine>
 ```
 
 Downloads and extracts the ruamel.yaml 0.16.13 wheel from PyPI into the engine's
