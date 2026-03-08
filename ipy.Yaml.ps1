@@ -6,7 +6,7 @@ $namespace_shim = @'
 # The IronPythonEmbedded meta_path importer resolves ruamel.yaml directly;
 # pkgutil.extend_path is not needed and would fail in a virtual filesystem.
 '@
-$patchedInit = @'
+$patched_init = @'
 # coding: utf-8
 # ruamel.yaml 0.16.13 __init__.py -- patched for IronPython 3.4.2
 # Removed: _package_data (metadata only)
