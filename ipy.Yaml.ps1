@@ -18,6 +18,12 @@ __version__ = '0.16.13'
 __with_libyaml__ = False
 
 from ruamel.yaml.main import *  # NOQA
+
+# IronPython patch: official_plug_ins uses __file__ which is not defined
+# in virtual-filesystem modules; return empty list since no plug-ins exist.
+def _official_plug_ins_noop(self):
+    return []
+YAML.official_plug_ins = _official_plug_ins_noop
 '@
 $patched_compat = @'
 # coding: utf-8
