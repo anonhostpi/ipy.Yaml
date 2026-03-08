@@ -12,7 +12,7 @@ for use with [IronPythonEmbedded](../IronPythonEmbedded) under IronPython 3.4.2.
 $builder = iwr 'https://raw.githubusercontent.com/anonhostpi/IronPythonEmbedded/main/IronPythonEmbedded.ps1' | iex
 $engine = $builder.Build()
 . ./ipy.Yaml.ps1
-Add-IpyYaml -Engine $engine
+Install-IpyYaml -Engine $engine
 $engine.Execute("import ruamel.yaml; print(ruamel.yaml.__version__)")
 ```
 
